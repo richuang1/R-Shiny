@@ -435,17 +435,17 @@ server <- function(input, output) {
     
     df <- dbGetQuery(db, query)
     
-    DT::datatable(df)
+    df
 
     
   })
-  output$querytable <- renderTable({ currentdf() })
+  output$querytable <- renderTable({ DT::datatable(currentdf()) })
   output$downloadData <- downloadHandler(
     filename = function() {
       paste("QueriedData", "csv", sep = ".")
     },
     content = function(file) {
-      write.csv(currentdf(),file)
+      write.csv(as.data.frame(currentdf()),file)
     }
   )
   }
