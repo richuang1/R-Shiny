@@ -8,141 +8,142 @@ library(dplyr) # for data summary/transformation
 library(ggplot2)
 library(plotly)
 library(DT)
+library(shinyWidgets)
 
 # ---------------------------------------------------------------
 # ---------------------------------------------------------------
 # user interface set up
 
-ui <- navbarPage(title = "Future Water Indiana", id = "nav", 
+ui <- navbarPage(title = span("Future Water Indiana", 
+                              style = "background-color: navy; color:white ; font-family: Calibri"),
+                 tabPanel(span("Interactive map", style="color:olive; font-family: Calibri"),
+                          fluidRow(
+                            column(3, 
+                                   # input: select variable to map
+                                   selectInput("map.var", span("Variable:", style="color:brown; font-family: Calibri"),
+                                               c( "Precipiation" = "_precip",
+                                                  "Evapotranspiration" = "_et",
+                                                  "Soil water content" = "_sw",
+                                                  "Groundwater Recharge" = "_perc", 
+                                                  "Baseflow" = "_gw_q",
+                                                  "Streamflow" = "_flow_out",
+                                                  "Water Yield" = "_wyld"))
+                            ),
+                            column(3, 
+                                   # input: select time period
+                                   selectInput("map.stype",  span("Summary Period:", style="color:brown; font-family: Calibri"),
+                                               c("Annual" = "ann",
+                                                 "January" = 1,
+                                                 "February" = 2,
+                                                 "March" = 3, 
+                                                 "April" = 4,
+                                                 "May" = 5,
+                                                 "June" = 6,
+                                                 "July" = 7,
+                                                 "August" = 8,
+                                                 "September" = 9,
+                                                 "October" = 10,
+                                                 "November" = 11,
+                                                 "December" = 12))
+                            ),
+                            column(3, 
+                                   # input: select time period
+                                   selectInput("map.period",  span("Time Period:", style="color:brown; font-family: Calibri"),
+                                               c("2020s" = "2020", 
+                                                 "2050s" = "2050",
+                                                 "2080s" = "2080"))
+                            ),
+                            
+                            column(3, 
+                                   selectInput("map.rcp",  span("Emissions Scenario:", style="color:brown; font-family: Calibri"),
+                                               c("Medium" = "45",
+                                                 "High" = "85"))
+                            )
+                          ),actionButton('goMap', 'Go Map',icon("refresh")),
+                          hr(),
+                          leafletOutput("map", height = 500),
+                          plotlyOutput("map.plot")
+                 ), # end of interactive map panel      
                  
-           tabPanel("Interactive map", 
-                    fluidRow(
-                      column(3, 
-                             # input: select variable to map
-                             selectInput("map.var", "Variable:", 
-                                         c("Precipitation" = "_precip",
-                                           "Evapotranspiration" = "_et",
-                                           "Soil water content" = "_sw",
-                                           "Groundwater Recharge" = "_perc", 
-                                           "Baseflow" = "_gw_q",
-                                           "Streamflow" = "_flow_out",
-                                           "Water Yield" = "_wyld"))
-                      ),
-                      column(3, 
-                             # input: select time period
-                             selectInput("map.stype", "Summary Period:", 
-                                         c("Annual" = "ann",
-                                           "January" = 1,
-                                           "February" = 2,
-                                           "March" = 3, 
-                                           "April" = 4,
-                                           "May" = 5,
-                                           "June" = 6,
-                                           "July" = 7,
-                                           "August" = 8,
-                                           "September" = 9,
-                                           "October" = 10,
-                                           "November" = 11,
-                                           "December" = 12))
-                      ),
-                      column(3, 
-                             # input: select time period
-                             selectInput("map.period", "Time Period:", 
-                                         c("2020s" = "2020", 
-                                           "2050s" = "2050",
-                                           "2080s" = "2080"))
-                      ),
-
-                      column(3, 
-                             selectInput("map.rcp", "Emissions Scenario:", 
-                                                          c("Medium" = "45",
-                                                            "High" = "85"))
-                             )
-                      ),
-                    hr(),
-                    leafletOutput("map", height = 500),
-                    plotlyOutput("map.plot")
-                    ), # end of interactive map panel      
+                 tabPanel(span("Interactive Plot", style="color:olive; font-family: Calibri"), 
+                          fluidRow(
+                            column(3, 
+                                   # input: select variable to map
+                                   selectInput("plot.var",  span("Variable:", style="color:brown; font-family: Calibri"),
+                                               c("Precipitation" = "_precip",
+                                                 "Evapotranspiration" = "_et",
+                                                 "Soil water content" = "_sw",
+                                                 "Groundwater Recharge" = "_perc", 
+                                                 "Baseflow" = "_gw_q",
+                                                 "Streamflow" = "_flow_out",
+                                                 "Water Yield" = "_wyld"))
+                            ),
+                            column(3, 
+                                   # input: select variable to map
+                                   selectInput("plot.type",  span("Plot Type:", style="color:brown; font-family: Calibri"),
+                                               c("Annual Change (%)" = "annual",
+                                                 "Monthly Change (%)" = "monthly"))
+                            )
+                          ), actionButton('goPlot', 'Go plot'),
+                          hr(),
+                          
+                          plotlyOutput("plot")
+                          
+                 ), # end of interactive plot panel
                  
-           tabPanel("Interactive Plot", 
-                    fluidRow(
-                      column(3, 
-                             # input: select variable to map
-                             selectInput("plot.var", "Variable:", 
-                                         c("Precipitation" = "_precip",
-                                           "Evapotranspiration" = "_et",
-                                           "Soil water content" = "_sw",
-                                           "Groundwater Recharge" = "_perc", 
-                                           "Baseflow" = "_gw_q",
-                                           "Streamflow" = "_flow_out",
-                                           "Water Yield" = "_wyld"))
-                      ),
-                      column(3, 
-                             # input: select variable to map
-                             selectInput("plot.type", "Plot Type:", 
-                                         c("Annual Change (%)" = "annual",
-                                           "Monthly Change (%)" = "monthly"))
-                      )
-                      ), 
-                    hr(),
-                    
-                    plotlyOutput("plot")
-                      
-                    ), # end of interactive plot panel
-           
-           tabPanel("Data Download", 
-                    fluidRow(
-                      column(3, 
-                           # input: select variable to map
-                           selectInput("table.var", "Variable:", 
-                                       c("Precipitation" = "_precip",
-                                         "Evapotranspiration" = "_et",
-                                         "Soil water content" = "_sw",
-                                         "Groundwater Recharge" = "_perc", 
-                                         "Baseflow" = "_gw_q",
-                                         "Streamflow" = "_flow_out",
-                                         "Water Yield" = "_wyld"))
-                             ),
-                      column(3, 
-                             # input: select time period
-                             selectInput("table.period", "Time Period:", 
-                                         c("Historical" = "1980", 
-                                           "2020s" = "2020", 
-                                           "2050s" = "2050",
-                                           "2080s" = "2080"))
-                      ),
-                      column(3, 
-                             # input: select time period
-                             selectInput("table.stype", "Summary Period:", 
-                                         c("Annual" = "ann", 
-                                           "Monthly" = "month"))
-                      ),
-                      column(3, 
-                             conditionalPanel("input.table.period != '1980'", 
-                                              # only prompt for rcp if a future period (not historical)
-                                              # input: select rcp
-                                              selectInput("table.rcp", "Emissions Scenario:", 
-                                                          c("Medium" = "45",
-                                                            "High" = "85")),
-                                              downloadButton('downloadData', 'Download')
-                                              )
-                             
-                      )
-
-                    ),
-                    hr(),
-                    DT::dataTableOutput("querytable")
-                    
-                    ) # end of data download user interface setup
-           
-        ) # end of user-inferface setup
+                 tabPanel(span("Data Download", style="color:olive; font-family: Calibri"), 
+                          fluidRow(
+                            column(3, 
+                                   # input: select variable to map
+                                   selectInput("table.var",  span("Variable:", style="color:brown; font-family: Calibri"),
+                                               c("Precipitation" = "_precip",
+                                                 "Evapotranspiration" = "_et",
+                                                 "Soil water content" = "_sw",
+                                                 "Groundwater Recharge" = "_perc", 
+                                                 "Baseflow" = "_gw_q",
+                                                 "Streamflow" = "_flow_out",
+                                                 "Water Yield" = "_wyld"))
+                            ),
+                            column(3, 
+                                   # input: select time period
+                                   selectInput("table.period",  span("Time Period:", style="color:brown; font-family: Calibri"),
+                                               c("Historical" = "1980", 
+                                                 "2020s" = "2020", 
+                                                 "2050s" = "2050",
+                                                 "2080s" = "2080"))
+                            ),
+                            column(3, 
+                                   # input: select time period
+                                   selectInput("table.stype",  span("Summary Period:", style="color:brown; font-family: Calibri"),
+                                               c("Annual" = "ann", 
+                                                 "Monthly" = "month"))
+                            ),
+                            column(3, 
+                                   conditionalPanel("input.table.period != '1980'", 
+                                                    # only prompt for rcp if a future period (not historical)
+                                                    # input: select rcp
+                                                    selectInput("table.rcp",  span("Emissions Scenario:", style="color:brown; font-family: Calibri"),
+                                                                c("Medium" = "45",
+                                                                  "High" = "85")),
+                                                    downloadButton('downloadData', 'Download')
+                                   )
+                                   
+                            )
+                            
+                          ),
+                          hr(),
+                          DT::dataTableOutput("querytable")
+                          
+                 ) # end of data download user interface setup
+                 
+) # end of user-inferface setup
 
 
 # load the data - shapefile for mapping, SQL database connection, annual and monthly plot .r codes
 
 # shapefile for subbasin boundaries
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-basins <- readOGR(dsn = "C:/Users/lomei/Downloads/simpleshp/simpleshp_03.shp", stringsAsFactors = F) # !!!! change this file path
+basins <- readOGR(dsn = "C:/Users/lomei/Downloads/simpleshp/simpleshp_03.shp", stringsAsFactors = F) 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 basins@data$id <- as.numeric(basins@data$Subbasin)
 
@@ -188,14 +189,32 @@ labels <- data.frame(input.var = c("_precip",
                                "% Change Water Yield"))
 
 
-server <- function(input, output) {
-
+server <- function(input, output,session) {
+  
   
   # generate the map
   activeSubbasin <- reactiveVal()
-  
-  output$map <- renderLeaflet({
-    
+  myLeaflet <- reactiveVal()
+  observeEvent(input$goMap, {
+    # Re-run when button is clicked
+    # Create 0-row data frame which will be used to store data
+    dat <- data.frame(x = numeric(0), y = numeric(0))   
+    withProgress(message = 'Creating Map', value = 0, {
+      # Number of times we'll go through the loop
+      n <- 10
+      
+      for (i in 1:n) {
+        # Each time through the loop, add another row of data. This is
+        # a stand-in for a long-running computation.
+        dat <- rbind(dat, data.frame(x = rnorm(1), y = rnorm(1)))
+        
+        # Increment the progress bar, and update the detail text.
+        incProgress(1/n, detail = paste( i))
+        
+        # Pause for 0.1 seconds to simulate a long computation.
+        Sys.sleep(0.1)
+      }
+    })
     # build the SQL query from the user selections
     if (input$map.stype == "ann") {
       col.name <- columns.annual[grep(input$map.var, columns.annual)]
@@ -233,27 +252,38 @@ server <- function(input, output) {
     
     id <- as.vector(basins$id)
     
-    leaflet() %>% 
-      addProviderTiles("Stamen.TonerLite", group = "Toner Lite") %>% 
-      addPolygons(data = basins, layerId = id, stroke = T, color = "black", 
-                  smoothFactor = 0.2, weight = 1, 
-                  fillColor = ~pal(pct.change), fillOpacity = 0.75, 
-                  popup = paste0(labels$label[grep(input$map.var, labels$input.var)], ": ", round(pct.change, 1)), 
-                  highlight = highlightOptions(weight = 2.5, fillOpacity = 1, bringToFront = T)) %>% 
-      addLegend("bottomleft", pal = pal, values = pct.change,
-                title = labels$label[grep(input$map.var, labels$input.var)],
-                opacity = 0.75)
-    
+    myLeaflet(leaflet() %>% 
+                addProviderTiles("Stamen.TonerLite", group = "Toner Lite") %>% 
+                addPolygons(data = basins, layerId = id, stroke = T, color = "black", 
+                            smoothFactor = 0.2, weight = 1, 
+                            fillColor = ~pal(pct.change), fillOpacity = 0.75, 
+                            popup = paste0(labels$label[grep(input$map.var, labels$input.var)], ": ", round(pct.change, 1)), 
+                            highlight = highlightOptions(weight = 2.5, fillOpacity = 1, bringToFront = T)) %>% 
+                addLegend("bottomleft", pal = pal, values = pct.change,
+                          title = labels$label[grep(input$map.var, labels$input.var)],
+                          opacity = 0.75))
   })
   
-
+  output$map <- renderLeaflet({
+    myLeaflet()
+  })
   
   observeEvent(input$map_shape_click, { # update the location selectInput on map clicks
     p <- input$map_shape_click
     activeSubbasin(p$id)
     print(activeSubbasin)
     str(activeSubbasin)
-    })
+  })
+}
+  
+  
+  
+  observeEvent(input$map_shape_click, { # update the location selectInput on map clicks
+    p <- input$map_shape_click
+    activeSubbasin(p$id)
+    print(activeSubbasin)
+    str(activeSubbasin)
+  })
   
   output$map.plot <- renderPlotly({
     
@@ -332,9 +362,30 @@ server <- function(input, output) {
     
   })
   
-
+  
   # generate a plot of the data
   output$plot <- renderPlotly({
+    input$goPlot # Re-run when button is clicked
+    
+    # Create 0-row data frame which will be used to store data
+    dat <- data.frame(x = numeric(0), y = numeric(0))
+    
+    withProgress(message = 'Making plot', value = 0, {
+      # Number of times we'll go through the loop
+      n <- 10
+      
+      for (i in 1:n) {
+        # Each time through the loop, add another row of data. This is
+        # a stand-in for a long-running computation.
+        dat <- rbind(dat, data.frame(x = rnorm(1), y = rnorm(1)))
+        
+        # Increment the progress bar, and update the detail text.
+        incProgress(1/n, detail = paste("Doing part", i))
+        
+        # Pause for 0.1 seconds to simulate a long computation.
+        Sys.sleep(0.1)
+      }
+    })
     
     
     # build query for annual values
@@ -360,7 +411,7 @@ server <- function(input, output) {
       summarize(mean = mean(value)) %>% 
       arrange(gcm_id) # sort so that the historical value (gcm_id 11) is last
     
-   
+    
     periods <- annual$period[c(1:60)]
     periods <- paste0(periods, "s")
     rcps <- annual$rcp[c(1:60)]
@@ -409,7 +460,7 @@ server <- function(input, output) {
   # ------------------------------------------------------------------------------------------------------------------
   # download capability needs to be added ----------------------------------------------------------------------------
   currentdf <- reactive({
-  
+    
     
     # build query based on user-selections
     if (input$table.stype == "ann") {
@@ -431,25 +482,29 @@ server <- function(input, output) {
                         ") AND (rcp = ", input$table.rcp, ")")
       }
     }
-
     
-    df <- dbGetQuery(db, query)
+    dbGetQuery(db, query)
     
-    df
-
+    
     
   })
-  output$querytable <- renderTable({ DT::datatable(currentdf()) })
+  
+  output$querytable <- renderDataTable({
+    # use reactive expression "datasetInput()" to query the SQL database and return the data based on the user-selected inputs
+    DT::datatable(currentdf())
+    
+  })
+  
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("QueriedData", "csv", sep = ".")
+      paste(input$map.var,"_", input$map.stype, "_", input$map.period, "_",input$rcp, ".csv")
     },
     content = function(file) {
-      write.csv(as.data.frame(currentdf()),file)
+      write.csv(currentdf(), file)
     }
   )
-  }
-  
+}
+
 
 
 
