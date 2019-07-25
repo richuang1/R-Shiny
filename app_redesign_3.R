@@ -145,7 +145,7 @@ ui <- navbarPage(title = span("Future Water Indiana",
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 basins <- readOGR(dsn = "C:/Users/lomei/Downloads/simpleshp/simpleshp_03.shp", stringsAsFactors = F) 
 # ---------------------------------------------------------------------------------------------------------------------------------------
-basins@data$id <- as.numeric(basins@data$Subbasin)
+basins$data$id <- as.numeric(basins$dataSubbasin)
 
 # connect to MySQL database
 db <- dbConnect(odbc(), 
@@ -196,7 +196,7 @@ server <- function(input, output) {
   activeSubbasin <- reactiveVal()
   myLeaflet <- reactiveVal()
   
-    observeEvent(input$goMap {# Re-run when button is clicked
+    observeEvent(input$goMap ,{# Re-run when button is clicked
     # Create 0-row data frame which will be used to store data
     dat <- data.frame(x = numeric(0), y = numeric(0))
     
@@ -357,8 +357,9 @@ server <- function(input, output) {
   
   
   # generate a plot of the data
-  output$plot <- renderPlotly({
-    input$goPlot # Re-run when button is clicked
+  myPlot <- reactiveEval()
+  
+    observeEvent(input$goPlot, {# Re-run when button is clicked
     
     # Create 0-row data frame which will be used to store data
     dat <- data.frame(x = numeric(0), y = numeric(0))
@@ -443,10 +444,11 @@ server <- function(input, output) {
       theme_classic() + 
       labs(color = "GCM:") + 
       ylab("Percent change - annual") + 
-      xlab("") 
+      xlab("")
     
-    ggplotly(p1, tooltip = "text")
-    
+    ggplotly(p1, tooltip = "text"))
+    output$plot <- renderPlotly({
+      myPlot()
   })
   
   # data download and table ------------------------------------------------------------------------------------------
